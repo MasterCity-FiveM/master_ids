@@ -2,6 +2,7 @@ local show3DText = true
 -- ID Over Head Part
 local disPlayerNames = 5
 local playerDistances = {}
+local AdminsAduty = {}
 -- ID Over Head Part ^
 
 RegisterNetEvent("combat:showDisconnect")
@@ -85,6 +86,15 @@ local function DrawText3D(position, text, r,g,b)
     end
 end
 
+RegisterNetEvent("IDAboveHead:aduty")
+AddEventHandler("IDAboveHead:aduty", function(status, playerID, name)
+   if status == true then
+		AdminsAduty[playerID] = name
+   else
+		AdminsAduty[playerID] = nil
+   end
+end)
+
 Citizen.CreateThread(function()
 	Wait(500)
     while true do
@@ -93,11 +103,16 @@ Citizen.CreateThread(function()
 			id = k.id
             local targetPed = GetPlayerPed(id)
             local targetPedCords = GetEntityCoords(targetPed)
-			if NetworkIsPlayerTalking(id) then
+			
+			Target_ServerID = GetPlayerServerId(id)
+			if NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] == nil then
 				DrawText3D(targetPedCords, GetPlayerServerId(id), 247,124,24)
-				--DrawMarker(27, targetPedCords.x, targetPedCords.y, targetPedCords.z-0.97, 0, 0, 0, 0, 0, 0, 1.001, 1.0001, 0.5001, 173, 216, 230, 100, 0, 0, 0, 0)
-			else
-				--DrawText3D(targetPedCords, GetPlayerServerId(id), 255,255,255)
+			elseif NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] ~= nil then
+				DrawText3D(targetPedCords, "[GM] " .. AdminsAduty[Target_ServerID], 136, 252, 3)
+			elseif AdminsAduty[Target_ServerID] ~= nil then
+				DrawText3D(targetPedCords, "[GM] " .. AdminsAduty[Target_ServerID], 3, 252, 190)
+			elseif AdminsAduty[GetPlayerServerId(PlayerId())] ~= nil then
+				DrawText3D(targetPedCords, GetPlayerServerId(id), 255, 255, 255)
 			end
         end
         Citizen.Wait(5)
@@ -109,6 +124,9 @@ Citizen.CreateThread(function()
         local playerPed = PlayerPedId()
         local playerCoords = GetEntityCoords(playerPed)
         playerDistances = {}
+		table.insert(playerDistances, {
+			id = PlayerId()
+		})
 		
         for _, id in ipairs(GetActivePlayers()) do
             local targetPed = GetPlayerPed(id)
