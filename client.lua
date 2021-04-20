@@ -3,6 +3,7 @@ local show3DText = true
 local disPlayerNames = 5
 local playerDistances = {}
 local AdminsAduty = {}
+local StreamerList = {}
 -- ID Over Head Part ^
 
 RegisterNetEvent("combat:showDisconnect")
@@ -32,6 +33,16 @@ function Display(id, crds, reason)
     end)
 end
 
+Citizen.CreateThread(function()
+	TriggerServerEvent("Master_AdminPanel:GetAdutyList")
+end)
+
+RegisterNetEvent("IDAboveHead:SetAdutyList")
+AddEventHandler("IDAboveHead:SetAdutyList", function(Admins, Streamers)
+    AdminsAduty = Admins
+	StreamerList = Streamers
+end)
+	
 function DrawText3DSecond(x,y,z, text)
     local onScreen,_x,_y=World3dToScreen2d(x,y,z)
     local px,py,pz=table.unpack(GetGameplayCamCoords())
@@ -95,6 +106,15 @@ AddEventHandler("IDAboveHead:aduty", function(status, playerID, name)
    end
 end)
 
+RegisterNetEvent("IDAboveHead:streamer")
+AddEventHandler("IDAboveHead:streamer", function(status, playerID, name)
+   if status == true then
+		StreamerList[playerID] = name
+   else
+		StreamerList[playerID] = nil
+   end
+end)
+
 Citizen.CreateThread(function()
 	Wait(500)
     while true do
@@ -105,12 +125,18 @@ Citizen.CreateThread(function()
             local targetPedCords = GetEntityCoords(targetPed)
 			
 			Target_ServerID = GetPlayerServerId(id)
-			if NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] == nil then
+			if NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] == nil and StreamerList[Target_ServerID] == nil then
 				DrawText3D(targetPedCords, GetPlayerServerId(id), 247,124,24)
 			elseif NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] ~= nil then
 				DrawText3D(targetPedCords, "[GM] " .. AdminsAduty[Target_ServerID], 136, 252, 3)
+			elseif NetworkIsPlayerTalking(id) and StreamerList[Target_ServerID] ~= nil then
+				--DrawText3D(targetPedCords, "[Streamer] " .. StreamerList[Target_ServerID] .. " (" .. GetPlayerServerId(id) ..")", 115, 50, 168)
+				DrawText3D(targetPedCords, "[Streamer] (" .. GetPlayerServerId(id) ..")", 168, 50, 127)
 			elseif AdminsAduty[Target_ServerID] ~= nil then
 				DrawText3D(targetPedCords, "[GM] " .. AdminsAduty[Target_ServerID], 3, 252, 190)
+			elseif StreamerList[Target_ServerID] ~= nil then
+				--DrawText3D(targetPedCords, "[Streamer] " .. StreamerList[Target_ServerID] .. " (" .. GetPlayerServerId(id) ..")", 168, 50, 127)
+				DrawText3D(targetPedCords, "[Streamer] (" .. GetPlayerServerId(id) ..")", 115, 50, 168)
 			elseif AdminsAduty[GetPlayerServerId(PlayerId())] ~= nil then
 				DrawText3D(targetPedCords, GetPlayerServerId(id), 255, 255, 255)
 			end
