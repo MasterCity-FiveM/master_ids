@@ -4,6 +4,7 @@ local disPlayerNames = 5
 local playerDistances = {}
 local AdminsAduty = {}
 local StreamerList = {}
+local NewPlayersList = {}
 -- ID Over Head Part ^
 
 RegisterNetEvent("combat:showDisconnect")
@@ -34,13 +35,15 @@ function Display(id, crds, reason)
 end
 
 Citizen.CreateThread(function()
+    Citizen.Wait(2000)
 	TriggerServerEvent("Master_AdminPanel:GetAdutyList")
 end)
 
 RegisterNetEvent("IDAboveHead:SetAdutyList")
-AddEventHandler("IDAboveHead:SetAdutyList", function(Admins, Streamers)
+AddEventHandler("IDAboveHead:SetAdutyList", function(Admins, Streamers, NewPlayers)
     AdminsAduty = Admins
 	StreamerList = Streamers
+	NewPlayersList = NewPlayers
 end)
 	
 function DrawText3DSecond(x,y,z, text)
@@ -115,6 +118,15 @@ AddEventHandler("IDAboveHead:streamer", function(status, playerID, name)
    end
 end)
 
+RegisterNetEvent("IDAboveHead:newPlayer")
+AddEventHandler("IDAboveHead:newPlayer", function(status, playerID, name)
+   if status == true then
+		NewPlayersList[playerID] = name
+   else
+		NewPlayersList[playerID] = nil
+   end
+end)
+
 Citizen.CreateThread(function()
 	Wait(500)
     while true do
@@ -126,7 +138,11 @@ Citizen.CreateThread(function()
 			
 			Target_ServerID = GetPlayerServerId(id)
 			if NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] == nil and StreamerList[Target_ServerID] == nil then
-				DrawText3D(targetPedCords, GetPlayerServerId(id), 247,124,24)
+				if NewPlayersList[Target_ServerID] == nil then
+					DrawText3D(targetPedCords, GetPlayerServerId(id), 247,124,24)
+				else
+					DrawText3D(targetPedCords, "[New Player] (" .. GetPlayerServerId(id) ..")", 247,124,24)
+				end
 			elseif NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] ~= nil then
 				DrawText3D(targetPedCords, "[GM] " .. AdminsAduty[Target_ServerID], 136, 252, 3)
 			elseif NetworkIsPlayerTalking(id) and StreamerList[Target_ServerID] ~= nil then
