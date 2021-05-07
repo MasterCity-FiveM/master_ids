@@ -131,6 +131,7 @@ Citizen.CreateThread(function()
 	Wait(500)
     while true do
 		tmp = playerDistances
+		
         for v, k in ipairs(tmp) do
 			id = k.id
             local targetPed = GetPlayerPed(id)
@@ -141,7 +142,7 @@ Citizen.CreateThread(function()
 				if NewPlayersList[Target_ServerID] == nil then
 					DrawText3D(targetPedCords, GetPlayerServerId(id), 247,124,24)
 				else
-					DrawText3D(targetPedCords, "[New Player] (" .. GetPlayerServerId(id) ..")", 247,124,24)
+					DrawText3D(targetPedCords, "[New Player] (" .. GetPlayerServerId(id) ..")", 247, 124, 24)
 				end
 			elseif NetworkIsPlayerTalking(id) and AdminsAduty[Target_ServerID] ~= nil then
 				DrawText3D(targetPedCords, "[GM] " .. AdminsAduty[Target_ServerID], 136, 252, 3)
@@ -174,7 +175,7 @@ Citizen.CreateThread(function()
             local targetPed = GetPlayerPed(id)
             if targetPed ~= nil and targetPed ~= playerPed then
                 local distance = #(playerCoords-GetEntityCoords(targetPed))
-				if distance < disPlayerNames then
+				if distance < disPlayerNames or (AdminsAduty[GetPlayerServerId(PlayerId())] ~= nil and distance < 20) then
 					playerDistances[id] = id
 					table.insert(playerDistances, {
 						id = id
